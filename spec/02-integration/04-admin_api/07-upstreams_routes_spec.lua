@@ -539,7 +539,7 @@ describe("Admin API: #" .. kong_config.database, function()
               body = { created_at = 1461276890000 },
               headers = {["Content-Type"] = content_type}
             })
-            local body = assert.response(res).has.status(500)
+            assert.response(res).has.status(500)
           end
         end)
       end)
