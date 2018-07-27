@@ -1482,7 +1482,7 @@ for _, strategy in helpers.each_strategy() do
               -----------------------------------------
 
               local _, _, status = client_requests(1, api_host)
-              assert.same(502, status)
+              assert.same(503, status)
             end)
 
           end)
