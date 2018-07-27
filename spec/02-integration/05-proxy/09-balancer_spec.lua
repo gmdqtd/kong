@@ -295,10 +295,13 @@ local function client_requests(n, host_or_headers, proxy_host, proxy_port)
     }
     if not res then
       fails = fails + 1
+      print("FAIL (no body)")
     elseif res.status == 200 then
       oks = oks + 1
+      print("OK ", res.status, res:read_body())
     elseif res.status > 399 then
       fails = fails + 1
+      print("FAIL ", res.status, res:read_body())
     end
     last_status = res and res.status
     client:close()
@@ -433,10 +436,7 @@ end
 
 
 local function truncate_relevant_tables(db, dao)
-  db:truncate("services")
-  db:truncate("routes")
-  dao.upstreams:truncate()
-  dao.targets:truncate()
+  db:truncate() -- services, routes, upstreams, targets
   dao.plugins:truncate()
 end
 
@@ -455,7 +455,7 @@ local function poll_wait_health(upstream_name, host, port, value, admin_port)
     end
     ngx.sleep(0.01) -- poll-wait
   end
-  assert(false, "timed out waiting for " .. host .. ":" .. port " in " ..
+  assert(false, "timed out waiting for " .. host .. ":" .. port .. " in " ..
                 upstream_name .. " to become " .. value)
 end
 
@@ -784,7 +784,7 @@ for _, strategy in helpers.each_strategy() do
 
           end)
 
-          it("perform passive health checks", function()
+          it("#perform passive health checks", function()
 
             for nfails = 1, 3 do
 
@@ -1453,6 +1453,7 @@ for _, strategy in helpers.each_strategy() do
               local requests = SLOTS * 2 -- go round the balancer twice
 
               local upstream_name = add_upstream()
+
               local port1 = add_target(upstream_name, localhost)
               local port2 = add_target(upstream_name, localhost)
               local api_host = add_api(upstream_name)
@@ -1481,7 +1482,7 @@ for _, strategy in helpers.each_strategy() do
               -----------------------------------------
 
               local _, _, status = client_requests(1, api_host)
-              assert.same(503, status)
+              assert.same(502, status)
             end)
 
           end)
